@@ -15,7 +15,55 @@ class PlayerShip extends Phaser.Sprite
     constructor: (@game, x, y) ->
         super(@game, x, y, 'player-ship')
         @game.add.existing(@)
+        @anchor.setTo(0.5)
+        @speed = 2
+        @inRoute = false
 
+        angle = Math.random() * Math.PI * 2
+        @vx = Math.cos(angle) * @speed
+        @vy = Math.sin(angle) * @speed
+
+    setTargetPlanet: (@planet) ->
+        @inRoute = true
+        console.log ('here')
+
+    update: ->
+        dist = Phaser.Math.distance(
+            @x, @y
+            @planet.sprite.x
+            @planet.sprite.y
+        )
+        if dist > 30
+            targetAngle = Phaser.Math.angleBetween(
+                @x, @y
+                @planet.sprite.x
+                @planet.sprite.y
+            )
+            currentAngle = @rotation
+
+            dAngle = targetAngle - currentAngle
+            dAngle = ((dAngle + Math.PI) % (Math.PI * 2)) - Math.PI
+
+            if dAngle > 0
+                if dAngle > Math.PI / 16
+                    dAngle = Math.PI / 16
+            else if dAngle < 0
+                if dAngle < -Math.PI / 16
+                    dAngle = -Math.PI / 16
+            @rotation += dAngle * 0.3
+
+            @vy = Math.sin(@rotation) * @speed
+            @vx = Math.cos(@rotation) * @speed
+        else
+            @inRoute = false
+
+        @x += @vx
+        @y += @vy
+
+        if @inRoute
+            @tint = 0xff0000
+        else
+            @tint = 0x0000ff
 
 class Planet
     constructor: (@game, x, y, letter) ->
@@ -61,9 +109,20 @@ class GameState extends Phaser.State
     create: ->
         @createPlanets()
         @createInputs()
-        new PlayerShip(@game, 500, 400)
-        new PlayerShip(@game, 505, 400)
-        new PlayerShip(@game, 510, 400)
+        @selectedShip = null
+        @ships = []
+        @spawnShip(@planets[1][2])
+        @spawnShip(@planets[1][2])
+        @spawnShip(@planets[1][2])
+        @spawnShip(@planets[1][2])
+        @spawnShip(@planets[1][2])
+        @spawnShip(@planets[1][2])
+        @spawnShip(@planets[1][2])
+
+    spawnShip: (planet) ->
+        ship = new PlayerShip(@game, planet.sprite.x, planet.sprite.y)
+        @ships.push(ship)
+        ship.setTargetPlanet(planet)
 
     createInputs: ->
         @inputs = for rowData, row in KEYMAP
@@ -78,7 +137,19 @@ class GameState extends Phaser.State
 
     handleKeyPress: (col, row) ->
         (e) =>
-            @planets[row][col].toggle()
+            planet = @planets[row][col]
+            if planet.hidden
+                planet.show()
+            else
+                if @selectedShip == null
+                    for ship in @ships
+                        if ship.planet == planet
+                            if not ship.inRoute
+                                @selectedShip = ship
+                                break
+                else
+                    @selectedShip.setTargetPlanet(planet)
+                    @selectedShip = null
 
     createPlanets: ->
         offset = 100
