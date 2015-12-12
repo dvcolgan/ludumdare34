@@ -1,0 +1,27 @@
+{
+  "name": "ludumdare34",
+  "version": "0.0.1",
+  "description": "My entry for Ludum Dare 34",
+  "main": "index.js",
+  "scripts": {
+    "watch": "watchify src/main.coffee -g coffeeify --fast --extension .js --extension .coffee -o assets/bundle.js -dv",
+    "build": "browserify src/main.coffee -g coffeeify --fast --extension .js --extension .coffee -o assets/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/dvcolgan/ludumdare34"
+  },
+  "author": "David Colgan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dvcolgan/ludumdare34/issues"
+  },
+  "dependencies": {
+    "coffee-script": "^1.10.0"
+  },
+  "devDependencies": {
+    "browserify": "^11.2.0",
+    "coffeeify": "^1.1.0",
+    "watchify": "^3.4.0"
+  }
+}
